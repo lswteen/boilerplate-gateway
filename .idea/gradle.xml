@@ -9,7 +9,8 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/presentation-gateway" />
-            <option value="$PROJECT_DIR$/step-01-server" />
+            <option value="$PROJECT_DIR$/step-backend-server" />
+            <option value="$PROJECT_DIR$/step-client-server" />
           </set>
         </option>
       </GradleProjectSettings>
