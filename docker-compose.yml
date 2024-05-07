@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  presentation-gateway:
+    build:
+      context: ./presentation-gateway
+    ports:
+      - "18080:18080"
+    networks:
+      - app-network
+
+  step-client-server:
+    build:
+      context: ./step-client-server
+    ports:
+      - "18081:18081"
+    networks:
+      - app-network
+
+  step-backend-server:
+    build:
+      context: ./step-backend-server
+    ports:
+      - "18082:18082"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
