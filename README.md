@@ -50,3 +50,10 @@ Copy code
 spring cloud gateway stars:>10 sort:stars-desc
 별점이 10개 이상인 "Spring Cloud Gateway" 관련 리포지토리 중에서 별점이 높은 순으로 정렬하여 검색합니다.
 ```
+
+
+# docker 및 docker-compose 3개의서버 구성
+
+```shell
+docker-compose up --build
+```
