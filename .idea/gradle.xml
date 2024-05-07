@@ -8,6 +8,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/contract" />
             <option value="$PROJECT_DIR$/presentation-gateway" />
             <option value="$PROJECT_DIR$/step-backend-server" />
             <option value="$PROJECT_DIR$/step-client-server" />
