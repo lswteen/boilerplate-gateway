@@ -1,1 +1,4 @@
 rootProject.name = 'gateway'
+include 'presentation-gateway'
+include 'step-01-server'
+
