@@ -1722,3 +1722,471 @@ parts: 2
 변경 후 경로: nameservice/red
 
 ---
+### Retry GatewayFilter Factory
+Retry GatewayFilter factory는 다음과 같은 매개변수를 지원합니다:
+
+retries: 재시도할 횟수.
+statuses: 재시도할 HTTP 상태 코드(org.springframework.http.HttpStatus 사용).
+methods: 재시도할 HTTP 메소드(org.springframework.http.HttpMethod 사용).
+series: 재시도할 상태 코드의 시리즈(org.springframework.http.HttpStatus.Series 사용).
+exceptions: 재시도할 예외 목록.
+backoff: 재시도에 대한 지수 백오프 설정. 재시도는 firstBackoff * (factor ^ n) 간격 후에 수행되며,  
+여기서 n은 반복 횟수입니다. maxBackoff가 설정된 경우 최대 백오프는 maxBackoff로 제한됩니다. 
+basedOnPreviousValue가 true이면, 백오프는 prevBackoff * factor로 계산됩니다.  
+
+
+기본 설정:
+retries: 3회
+series: 5XX 시리즈
+methods: GET 메소드
+exceptions: IOException 및 TimeoutException
+backoff: 비활성화
+
+구성 예제
+기본 구성 예제:
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: retry_test
+        uri: http://localhost:8080/flakey
+        predicates:
+        - Host=*.retry.com
+        filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY
+            methods: GET,POST
+            backoff:
+              firstBackoff: 10ms
+              maxBackoff: 50ms
+              factor: 2
+              basedOnPreviousValue: false
+```
+이 구성은 BAD_GATEWAY 상태 코드에 대해 GET 및 POST 메소드의 요청을 최대 3회 재시도하며,
+초기 백오프는 10ms, 최대 백오프는 50ms, 백오프 인수는 2입니다.
+
+단순화된 "shortcut" 구성:
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: retry_route
+        uri: https://example.org
+        filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: INTERNAL_SERVER_ERROR
+            methods: GET
+            backoff:
+              firstBackoff: 10ms
+              maxBackoff: 50ms
+              factor: 2
+              basedOnPreviousValue: false
+
+      - id: retryshortcut_route
+        uri: https://example.org
+        filters:
+        - Retry=3,INTERNAL_SERVER_ERROR,GET,10ms,50ms,2,false
+```
+
+두 구성은 동일한 동작을 정의합니다. INTERNAL_SERVER_ERROR 상태 코드에 대해 GET 메소드의 요청을 최대 3회 재시도합니다.
+
+주의사항:
+**forward:**로 접두사가 붙은 URL과 함께 재시도 필터를 사용할 때는 타겟 엔드포인트가 오류가 발생할 경우   
+클라이언트에게 응답을 보내지 않도록 신중하게 작성해야 합니다.  
+예를 들어, 타겟 컨트롤러 메소드가 오류 상태 코드로 ResponseEntity를 반환하지 않도록 하고,   
+대신 예외를 던지거나 Mono.error(ex)를 통해 오류를 신호로 보내야 합니다.  
+
+본문이 있는 HTTP 메소드와 함께 재시도 필터를 사용할 때는 본문이 캐시되므로 게이트웨이의 메모리 제약이 발생할 수 있습니다.   
+본문은 ServerWebExchangeUtils.CACHED_REQUEST_BODY_ATTR에 정의된 요청 속성에 캐시되며,   
+객체의 타입은 org.springframework.core.io.buffer.DataBuffer입니다.  
+
+구성 요약:  
+기본 Retry 설정:  
+재시도 횟수: 3회  
+재시도할 상태 코드: INTERNAL_SERVER_ERROR  
+재시도할 메소드: GET  
+초기 백오프: 10ms  
+최대 백오프: 50ms  
+백오프 인수: 2  
+이전 값 기반 여부: false  
+이 구성은 안정적인 서비스 운영을 위해 재시도 로직을 설정할 때 유용합니다.  
+
+---
+
+### RequestSize GatewayFilter Factory
+maxSize는 DataSize 유형이므로 'KB' 또는 'MB'와 같은 선택적 DataUnit 접미사와 함께 숫자로 정의할 수 있습니다. 
+기본값은 바이트를 나타내는 'B'입니다.
+이 필터는 요청의 허용 크기 한도를 바이트 단위로 정의합니다.
+
+다음은 RequestSize GatewayFilter를 구성하는 예제입니다:
+
+예시: 기본 구성
+```yaml
+application.yml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: request_size_route
+        uri: http://localhost:8080/upload
+        predicates:
+        - Path=/upload
+        filters:
+        - name: RequestSize
+          args:
+            maxSize: 5000000
+
+```
+
+이 구성은 /upload 경로로의 요청이 5,000,000 바이트(약 5MB)를 초과할 경우 요청을 제한하고, 상태 코드 413 Payload Too Large와 추가 헤더 errorMessage를 설정합니다.
+
+구성 요소 설명:
+maxSize: 5000000
+허용되는 요청 크기 한도를 정의합니다. 여기서는 5,000,000 바이트입니다.
+예시 설명:
+입력 경로: /upload
+변경 후 상태 코드: 413 Payload Too Large
+추가 헤더: errorMessage
+예: Request size is larger than permissible limit. Request size is 6.0 MB where permissible limit is 5.0 MB
+
+확장 예제:
+기본 RequestSize 구성:
+
+기본 허용 크기 한도를 5MB로 설정:
+
+```yaml
+
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: request_size_route
+        uri: http://localhost:8080/upload
+        predicates:
+        - Path=/upload
+        filters:
+        - name: RequestSize
+          args:
+            maxSize: 5000000
+
+```
+KB 단위 허용 크기 설정:
+
+허용 크기를 10KB로 설정하는 예제:
+```yaml
+application.yml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: request_size_kb_route
+        uri: http://localhost:8080/upload
+        predicates:
+        - Path=/upload
+        filters:
+        - name: RequestSize
+          args:
+            maxSize: 10KB
+
+```
+
+MB 단위 허용 크기 설정:
+
+허용 크기를 2MB로 설정하는 예제:
+```yaml
+application.yml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: request_size_mb_route
+        uri: http://localhost:8080/upload
+        predicates:
+        - Path=/upload
+        filters:
+        - name: RequestSize
+          args:
+            maxSize: 2MB
+
+```
+
+이 구성을 통해 RequestSize 필터는 요청 크기가 허용된 한도를 초과할 경우 상태 코드 413을 설정하고,   
+요청 크기 초과에 대한 명확한 오류 메시지를 포함하여 응답을 제공합니다.   
+이를 통해 요청 크기에 대한 제어를 효율적으로 관리할 수 있습니다.
+
+---
+
+### SetRequestHostHeader GatewayFilter Factory
+
+SetRequestHostHeader GatewayFilter factory는 host 매개변수를 사용하여 
+기존의 호스트 헤더를 지정된 값으로 교체할 수 있습니다. 
+다음은 SetRequestHostHeader GatewayFilter를 구성하는 예제입니다:
+```yaml
+application.yml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: set_request_host_header_route
+        uri: http://localhost:8080/headers
+        predicates:
+        - Path=/headers
+        filters:
+        - name: SetRequestHostHeader
+          args:
+            host: example.org
+
+```
+
+이 구성은 요청의 호스트 헤더 값을 example.org로 교체합니다.
+
+구성 요소 설명:
+host: example.org
+새로 설정할 호스트 헤더의 값입니다.
+예시 설명:
+입력 경로: /headers
+변경 후 호스트 헤더: example.org
+
+예제 코드 요약:
+기본 SetRequestHostHeader 구성:
+기존 호스트 헤더를 example.org로 교체:
+```yaml
+application.yml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: set_request_host_header_route
+        uri: http://localhost:8080/headers
+        predicates:
+        - Path=/headers
+        filters:
+        - name: SetRequestHostHeader
+          args:
+            host: example.org
+
+```
+확장 예제:
+다른 호스트로 설정:
+
+기존 호스트 헤더를 myhost.com으로 교체
+
+```yaml
+
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: set_request_host_myhost_route
+        uri: http://localhost:8080/headers
+        predicates:
+        - Path=/headers
+        filters:
+        - name: SetRequestHostHeader
+          args:
+            host: myhost.com
+
+```
+
+요약:
+SetRequestHostHeader 필터는 요청의 호스트 헤더를 지정된 값으로 설정하여,   
+특정 상황에서 필요한 호스트 헤더를 효율적으로 관리할 수 있습니다.   
+이를 통해 호스트 기반 라우팅을 쉽게 구성할 수 있습니다.  
+
+---
+### TokenRelay GatewayFilter Factory
+TokenRelay GatewayFilter는 Spring Cloud Gateway에서 OAuth2 액세스 토큰을 다운스트림 서비스로 전달할 수 있게 해줍니다.
+이 필터는 클라이언트로부터 전달된 토큰을 사용하여 리소스 요청을 전달합니다. 
+이때 clientRegistrationId 매개변수를 선택적으로 받을 수 있습니다.
+
+예제 구성
+Java 설정 (without clientRegistrationId):
+```java
+App.java
+@Bean
+public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
+    return builder.routes()
+            .route("resource", r -> r.path("/resource")
+                    .filters(f -> f.tokenRelay("myregistrationid"))
+                    .uri("http://localhost:9000"))
+            .build();
+}
+
+```
+YAML 설정 with clientRegistrationId:
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: resource
+        uri: http://localhost:9000
+        predicates:
+        - Path=/resource
+        filters:
+        - TokenRelay=myregistrationid
+
+```
+위 예제는 clientRegistrationId를 지정하여 해당 클라이언트 등록 정보를 사용해 OAuth2 액세스 토큰을 가져오고 전달합니다.
+
+
+Java 설정 without clientRegistrationId:
+```java
+App.java
+@Bean
+public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
+    return builder.routes()
+            .route("resource", r -> r.path("/resource")
+                    .filters(f -> f.tokenRelay())
+                    .uri("http://localhost:9000"))
+            .build();
+}
+
+```
+YAML 설정 without clientRegistrationId:
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: resource
+        uri: http://localhost:9000
+        predicates:
+        - Path=/resource
+        filters:
+        - TokenRelay=
+
+```
+이 예제에서는 clientRegistrationId를 생략하여 현재 인증된 사용자의 액세스 토큰을 사용하여 요청을 전달합니다.
+
+필수 종속성
+Spring Cloud Gateway에서 OAuth2 액세스 토큰을 전달하려면 다음 종속성을 추가해야 합니다:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-oauth2-client</artifactId>
+</dependency>
+
+```
+동작 원리
+필터는 현재 인증된 사용자로부터 OAuth2 액세스 토큰을 추출합니다.  
+clientRegistrationId가 제공된 경우, 해당 클라이언트 등록 정보를 사용하여 토큰을 가져옵니다.  
+clientRegistrationId가 제공되지 않은 경우, 로그인 중에 얻은 현재 사용자의 자체 액세스 토큰을 사용합니다.  
+추출된 액세스 토큰은 다운스트림 요청의 요청 헤더에 추가됩니다.  
+
+필수 설정  
+TokenRelayGatewayFilterFactory 빈은 올바른 spring.security.oauth2.client.* 속성이 설정된 경우에만 생성됩니다.  
+이는 ReactiveClientRegistrationRepository 빈의 생성을 트리거합니다.  
+
+기본 ReactiveOAuth2AuthorizedClientService 구현은 인메모리 데이터 저장소를 사용합니다.   
+보다 견고한 솔루션이 필요한 경우, 사용자 정의 ReactiveOAuth2AuthorizedClientService 구현을 제공해야 합니다.  
+
+---
+### Default Filters
+spring.cloud.gateway.default-filters 속성을 사용하면 모든 경로에 적용할 기본 필터를 정의할 수 있습니다.   
+이는 각 경로에 필터를 반복적으로 추가할 필요 없이 일괄적으로 필터를 적용할 수 있는 편리한 방법입니다.   
+다음은 default-filters를 사용하여 기본 필터를 정의하는 예제입니다:  
+
+```yaml
+application.yml
+spring:
+  cloud:
+    gateway:
+      default-filters:
+      - AddResponseHeader=X-Response-Default-Red, Default-Blue
+      - PrefixPath=/httpbin
+      routes:
+      - id: example_route
+        uri: https://example.org
+        predicates:
+        - Path=/example
+
+```
+구성 요소 설명:
+AddResponseHeader: X-Response-Default-Red, Default-Blue
+모든 응답에 X-Response-Default-Red 헤더를 추가하고 그 값을 Default-Blue로 설정합니다.
+
+PrefixPath: /httpbin
+모든 요청 경로에 /httpbin을 접두사로 추가합니다.
+
+예시 설명:
+AddResponseHeader:
+모든 응답 헤더에 X-Response-Default-Red: Default-Blue를 추가합니다.
+
+PrefixPath:
+모든 요청 경로에 /httpbin을 접두사로 추가합니다.
+예를 들어, /example 요청 경로는 /httpbin/example로 변경됩니다.
+
+확장 예제:
+추가 기본 필터 설정:
+
+RequestHeaderSize 필터 추가:
+```yaml
+application.yml
+spring:
+  cloud:
+    gateway:
+      default-filters:
+      - AddResponseHeader=X-Response-Default-Red, Default-Blue
+      - PrefixPath=/httpbin
+      - RequestHeaderSize=10KB
+      routes:
+      - id: example_route
+        uri: https://example.org
+        predicates:
+        - Path=/example
+
+```
+
+기능 설명:
+모든 요청의 헤더 크기를 10KB로 제한합니다.
+입력 경로: /example
+변경 후 경로: /httpbin/example
+추가된 헤더: X-Response-Default-Red: Default-Blue
+
+Retry 필터 추가:
+Retry 필터 적용:
+```yaml
+spring:
+  cloud:
+    gateway:
+      default-filters:
+      - AddResponseHeader=X-Response-Default-Red, Default-Blue
+      - PrefixPath=/httpbin
+      - Retry=3,INTERNAL_SERVER_ERROR,GET,10ms,50ms,2,false
+      routes:
+      - id: retry_route
+        uri: https://retry.example.org
+        predicates:
+        - Path=/retry/**
+
+```
+기능 설명:  
+HTTP 상태 코드 INTERNAL_SERVER_ERROR에 대해 GET 요청을 3회 재시도합니다.  
+입력 경로: /retry/**  
+변경 후 경로: /httpbin/retry/**  
+추가된 헤더: X-Response-Default-Red: Default-Blue  
+
+이 구성을 통해, 기본 필터는 모든 경로에 적용되며, 각 경로에 대해 반복적으로 필터를 추가할 필요 없이 일관된 필터링을 제공합니다.  
+이를 통해 코드의 간결함과 유지 보수성을 높일 수 있습니다.  
+
+---
+
+
+
+
+---
+
+
+
+
+---
