@@ -3,4 +3,5 @@ include 'presentation-gateway'
 include 'step-client-server'
 include 'step-backend-server'
 include 'contract'
+include 'filter'
 

@@ -1,0 +1,2 @@
+### Send log message to RabbitMQ
+GET http://localhost:18081/send-log
