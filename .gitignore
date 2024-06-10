@@ -4,9 +4,6 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-logs/
-sonarqube/
-generated/
 
 ### STS ###
 .apt_generated
@@ -28,6 +25,7 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+test.iml
 
 ### NetBeans ###
 /nbproject/private/
