@@ -1,0 +1,52 @@
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "info", "health", "refresh", "beans", "configprops", "env", "mappings" ]
+  endpoint:
+    configprops:
+      show-values: when_authorized
+  info:
+    git:
+      enabled: true
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: gateway-api
+          predicates:
+            - Path=/api/payment/**
+          uri: http://localhost:18080
+          filters:
+            - RewritePath=/api/payment/(?<segment>.*), /payment/$\{segment}
+
+boilerplate:
+  gateway:
+    routes:
+      gateway-api:
+        - predicates:
+            - Path=/api/payment/info
+          filters:
+            - AuthenticationCheckFilter
+        - predicates:
+            - Path=/api/payment/bill
+          filters:
+            - AuthenticationCheckFilter
+
+  authorization:
+    auth-info-map:
+      kr:
+        client-ip:
+          - 0:0:0:0:0:0:0:1
+          - 127.0.0.1
+          - 172.30.96.101
+      us:
+        client-ip:
+          - 0:0:0:0:0:0:0:1
+          - 127.0.0.1
+      jp:
+        client-ip:
+          - 2.0.0.0/16

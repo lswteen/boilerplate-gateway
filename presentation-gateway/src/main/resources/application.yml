@@ -1,25 +1,78 @@
 server:
   port: 18080
 
+  profiles:
+    active: local
+
 spring:
   main:
     web-application-type: reactive
+
   application:
     name: gateway
+
+  security:
+    user:
+      name: user
+      password: user_dev
+
+# Spring actuator 설정
+  endpoint:
+    health:
+      enabled: true
+      show-details: never
+    refresh:
+      enabled: true
+
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+    propagation:
+      type: w3c
+
+# Spring Cloud 설정
   cloud:
     gateway:
-      routes:
-        - id: account-service
-          uri: http://localhost:18081
-          predicates:
-            - Path=/account/**
-          filters:
-            - RewritePath=/account/(?<segment>.*), /$\{segment}
-        - id: shopping
-          uri: http://localhost:18082
-          predicates:
-            - Path=/shopping/**
+      httpserver:
+        wiretap: false # debugging = true
 
-      filter:
-        rewrite-path:
-          enabled: true
+      httpclient:
+        connect-timeout: 3_000
+        response-timeout: 5s
+        pool:
+          type: elastic
+          max-idle-time: 60s
+          acquire-timeout: 45_000
+        compression: true
+        ssl:
+          handshake-timeout: 10s
+          close-notify-flush-timeout: 3s
+          close-notify-read-timeout: 10s
+        wiretap: false # debugging = true
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: '*'
+            allowCredentials: true
+            allowedHeaders: '*'
+            allowedMethods:
+              - GET
+              - POST
+              - HEAD
+              - OPTIONS
+
+      default-filters:
+        - RemoveHttpHeadersFilter
+        - HeaderFilter
+
+# logback 설정
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.http.server.reactive: INFO
+    org.springframework.web.reactive: INFO
+    org.springframework.boot.autoconfigure.web: INFO
+    reactor.netty: INFO
