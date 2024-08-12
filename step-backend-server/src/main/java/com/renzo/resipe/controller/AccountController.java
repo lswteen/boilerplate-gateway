@@ -1,4 +1,4 @@
-package com.renzo.controller;
+package com.renzo.resipe.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
