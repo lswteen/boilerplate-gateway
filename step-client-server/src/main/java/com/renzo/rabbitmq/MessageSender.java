@@ -2,8 +2,6 @@ package com.renzo.rabbitmq;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -11,8 +9,8 @@ import java.util.Map;
 
 @Component
 public class MessageSender {
-    @Autowired
-    private AmqpTemplate rabbitTemplate;
+//    @Autowired
+//    private AmqpTemplate rabbitTemplate;
 
     public void sendLogMessage() throws JsonProcessingException {
         Map<String, Object> log = new HashMap<>();
@@ -34,6 +32,6 @@ public class MessageSender {
         ObjectMapper mapper = new ObjectMapper();
         String sendMessage = mapper.writeValueAsString(log);
 
-        this.rabbitTemplate.convertAndSend("", "PageLog_TEST", sendMessage);
+        //this.rabbitTemplate.convertAndSend("", "PageLog_TEST", sendMessage);
     }
 }

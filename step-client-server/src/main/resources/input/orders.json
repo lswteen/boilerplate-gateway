@@ -1,0 +1,36 @@
+[
+ {
+    "coffeeOrders": [
+      { "type": "Latte", "quantity": 1 },
+      { "type": "Americano", "quantity": 2 },
+      { "type": "Americano", "quantity": 3 }
+    ],
+    "status": "in progress"
+  },
+  {
+    "coffeeOrders": [
+      { "type": "Latte", "quantity": 1 },
+      { "type": "Cappuccino", "quantity": 2 },
+      { "type": "Americano", "quantity": 3 }
+    ],
+    "status": "in progress"
+  },
+  {
+    "coffeeOrders": [
+      { "type": "Latte", "quantity": 1 },
+      { "type": "Cappuccino", "quantity": 2 },
+      { "type": "Americano", "quantity": 3 }
+    ],
+    "orderTotalPrice": 22000,
+    "estimatedWaitTime": 13,
+    "status": "completed"
+  },
+  {
+    "coffeeOrders": [
+      { "type": "Latte", "quantity": 1 },
+      { "type": "Espresso", "quantity": 2 },
+      { "type": "Americano", "quantity": 3 }
+    ],
+    "status": "in progress"
+  }
+]
