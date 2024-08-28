@@ -57,3 +57,114 @@ spring cloud gateway stars:>10 sort:stars-desc
 ```shell
 docker-compose up --build
 ```
+
+
+# plantuml sequance uml
+```plantuml
+@startuml
+/' 이니시스 정기결제 - PC '/
+/'
+ 
+색상 정보
+- 그룹사 - #d9d2e9
+- psgservice - #d9ead3
+- 이니시스 - #fce5cd
+ 
+'/ 
+participant 그룹사 #d9d2e9
+participant layer_popup #d2e2e9
+participant inicis_layout #fce5cd
+participant gateway #d9ead3
+participant psgservice #d9ead3
+participant inicis #fce5cd
+ 
+== 카드등록 ==
+ 
+note left of 그룹사 #d9d2e9: 그룹사 레이어팝업 노출
+그룹사 -> gateway: 주문서(카드등록) 인증요청\n Required Headers : accessToken\n psg-service api 필수정보(returnUrl포함)
+activate gateway
+ 
+gateway --> gateway: headers 생성 \n clientIp, userAgent \n accessToken 정보 검증
+gateway -> psgservice: gateway 에서 생성된 headers 정보 및 \n group사에서 요청한 psg-service api 호출
+activate psgservice
+ 
+psgservice --> psgservice: 인증전문 생성(callback Url 포함)
+psgservice --> gateway : 인증전문, certify.jsp 페이지 전달
+deactivate psgservice
+ 
+gateway --> layer_popup: 인증전문, certify.jsp 페이지 전달
+deactivate gateway
+activate layer_popup
+note left of layer_popup #d2e2e9: certify.jsp 페이지 노출\n(빈화면)
+ 
+layer_popup -> inicis: 인증요청\n인증페이지(INIStdPay.js) 호출
+activate inicis
+ 
+inicis --> inicis: 인증전문 확인
+inicis --> inicis_layout: 인증전문 확인 및 카드입력 페이지 전달
+deactivate inicis
+activate inicis_layout
+note left of inicis_layout #fce5cd: inicis 카드입력 페이지 노출
+ 
+inicis_layout -> inicis_layout: 카드정보 입력
+inicis_layout -> inicis: 카드정보 등록 요청
+activate inicis
+ 
+inicis --> inicis: 카드정보 검증
+inicis --> inicis_layout: 카드정보 검증 결과 전달
+deactivate inicis
+inicis_layout --> layer_popup: 카드정보 검증 결과 전달
+deactivate inicis_layout
+layer_popup --> 그룹사: layer close
+deactivate layer_popup
+ 
+그룹사 -> gateway : 빌키 승인 요청(psgservice callback Url)
+ 
+activate gateway
+ 
+gateway -> psgservice: 빌키 승인 요청(psgservice callback Url)
+deactivate inicis
+activate psgservice
+ 
+psgservice --> psgservice: 빌키(billKey)승인 전문생성
+psgservice -> inicis: 빌키(billKey)승인 요청
+activate inicis
+ 
+inicis --> inicis: 빌키(billKey)승인전문 확인 및 빌키발급
+inicis --> psgservice: 빌키 승인 결과(응답결과, billKey,마스킹카드번호) 전달\nresult.jsp 페이지 생성
+deactivate inicis
+ 
+psgservice --> gateway: 빌키 승인 결과(응답결과, billKey,마스킹카드번호)\nresult.jsp 페이지 전달
+deactivate psgservice
+ 
+gateway --> 그룹사: 빌키 승인 결과(응답결과, billKey,마스킹카드번호)\nresult.jsp 페이지 전달
+deactivate gateway
+note left of 그룹사 #d9d2e9: result.jsp 페이지 노출\n(빈화면)
+ 
+그룹사 --> 그룹사: 그룹사 returnUrl 호출 - submit()
+deactivate layer_popup
+note left of 그룹사 #d9d2e9: 그룹사 returnUrl 페이지 노출
+ 
+== 결제요청 ==
+그룹사 -> gateway: 승인요청\n Required Headers : accessToken, device, siteCode \n psg-service api 필수정보
+activate gateway
+ 
+gateway --> gateway: headers 생성 \n clientIp, userAgent \n accessToken 정보 검증
+gateway -> psgservice: gateway 에서 생성된 headers 정보 및 \n group사에서 요청한 psg-service api 호출
+activate psgservice
+ 
+psgservice --> psgservice: 승인 전문생성
+psgservice -> inicis: 승인요청
+activate inicis
+ 
+inicis --> inicis: 승인전문 확인
+inicis --> psgservice: 승인결과 전달
+deactivate inicis
+ 
+psgservice --> gateway: 승인결과 전달
+deactivate psgservice
+ 
+gateway --> 그룹사: 승인결과 전달
+deactivate gateway
+@enduml
+```

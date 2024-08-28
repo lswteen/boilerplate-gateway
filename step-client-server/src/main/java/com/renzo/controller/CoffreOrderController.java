@@ -24,7 +24,8 @@ public class CoffreOrderController {
     @GetMapping("/manage-order")
     public ResponseEntity<List<CoffeeOrder>> manageOrder() throws IOException {
         byte[] jsonData = Files.readAllBytes(Paths.get(DATA_FILE_PATH));
-        List<CoffeeOrder> coffeeOrders = objectMapper.readValue(jsonData, new TypeReference<List<CoffeeOrder>>(){});
+        List<CoffeeOrder> coffeeOrders = objectMapper
+                .readValue(jsonData, new TypeReference<>(){});
         coffeeOrders.forEach(order -> order.processOrder());
         return ResponseEntity.ok(coffeeOrders);
     }
