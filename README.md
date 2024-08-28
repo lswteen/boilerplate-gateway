@@ -168,3 +168,58 @@ gateway --> 그룹사: 승인결과 전달
 deactivate gateway
 @enduml
 ```
+
+
+# C4 model system
+```plantuml
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+  
+AddElementTag("v1.0", $borderColor="#d73027")
+AddElementTag("v1.1", $fontColor="#d73027")
+AddElementTag("rabbitmq", $fontColor="orange")
+AddElementTag("pgsystem", $fontColor="blue")
+  
+AddRelTag("rabbitmq", $textColor="orange", $lineColor="orange", $lineStyle=DashedLine())
+AddRelTag("pgsystem", $textColor="blue", $lineColor="orange", $lineStyle=DashedLine())
+  
+top to bottom direction
+  
+Person(user1, "해외 User", "psg global gateway\nhttps://in-payment-global.qoo10.com", $tags="v1.1")
+Person(user2, "국내 User", "psg gateway\nhttps://payment.qoo10.com\nhttps://in-payment.qoo10.com", $tags="v1.0")
+  
+Container(gw, "Global Gateway", "java17", "payment global gateway", $tags="v1.1")
+Container(ggw, "Gateway", "java17", "payment gateway", $tags="v1.0")
+  
+Container(configsystem, "Config System", "java", "spring cloud config", $tags="pgsystem")
+  
+Container(psgapi, "PSG Global API", "java", "Handles all business logic (incl. new v1.1 extensions)", $tags="v1.0+v1.1")
+Container(psgglobalapi, "PSG API", "java", "Handles all business logic (incl. new v1.1 extensions)", $tags="v1.0")
+  
+ContainerDb(db, "Database", "Microsoft SQL", "Holds product, order and invoice information")
+Container(elk, "Logging", "Qoo10 Logging ELK stack", "https://kibana.qoo10.it", $tags="rabbitmq")
+Container(pgsystem, "PG System", "external", "이니시스, BRAINTREE", $tags="pgsystem")
+  
+Rel(user1, gw, "Uses", "https")
+Rel(user2, ggw, "Uses", "https")
+Rel(gw, psgapi, "Uses", "https")
+Rel(ggw, psgglobalapi, "Uses", "https")
+  
+Rel(psgapi, db, "Reads/Writes")
+Rel(psgglobalapi, db, "Reads/Writes")
+  
+Rel(ggw, elk, "queue", "messages", $tags="rabbitmq")
+Rel(gw, elk, "queue", "messages", $tags="rabbitmq")
+ 
+Rel(psgapi, pgsystem, "http", "messages", $tags="rabbitmq")
+Rel(psgglobalapi, pgsystem, "http", "messages", $tags="rabbitmq")
+  
+Rel(ggw, configsystem, "http", "messages", $tags="rabbitmq")
+Rel(gw, configsystem, "http", "messages", $tags="rabbitmq")
+  
+Rel(psgapi, elk, "queue", "messages", $tags="rabbitmq")
+Rel(psgglobalapi, elk, "queue", "messages", $tags="rabbitmq")
+  
+SHOW_LEGEND()
+@enduml
+```
