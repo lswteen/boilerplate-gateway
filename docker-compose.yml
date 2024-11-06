@@ -1,42 +1,66 @@
-version: '3.8'
 services:
-  presentation-gateway:
-    build:
-      context: ./presentation-gateway
-    ports:
-      - "18080:18080"
-    networks:
-      - app-network
+#  presentation-gateway:
+#    build:
+#      context: ./presentation-gateway
+#    ports:
+#      - "18080:18080"
+#    networks:
+#      - app-network
 
-  step-client-server:
-    build:
-      context: ./step-client-server
-    ports:
-      - "18081:18081"
-    networks:
-      - app-network
+#  step-client-server:
+#    build:
+#      context: ./step-client-server
+#    ports:
+#      - "18081:18081"
+#    networks:
+#      - app-network
 
-  step-backend-server:
-    build:
-      context: ./step-backend-server
-    ports:
-      - "18082:18082"
-    networks:
-      - app-network
+#  step-backend-server:
+#    build:
+#      context: ./step-backend-server
+#    ports:
+#      - "18082:18082"
+#    networks:
+#      - app-network
 
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
+  controller:
+    image: ngrinder/controller:3.5.9
+    platform: linux/amd64          # 플랫폼을 명시적으로 설정
+    restart: always
     ports:
-      - "8080:8080"   # Jenkins 웹 인터페이스 포트
-      - "50000:50000" # Jenkins 에이전트 통신 포트
+      - "9000:80"
+      - "16001:16001"
+      - "12000-12009:12000-12009"
     networks:
       - app-network
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock # Docker in Docker
     environment:
-      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false # 초기 설정 생략 (선택 사항)
+      - JAVA_OPTS=-Xms512m -Xmx1024m  # 최소 512MB, 최대 1024MB 메모리 설정
+    volumes:
+      - ./ngrinder-controller:/opt/ngrinder-controller
+  agent:
+    image: ngrinder/agent:3.5.9
+    platform: linux/amd64          # 플랫폼을 명시적으로 설정
+    restart: always
+    links:
+      - controller
+    environment:
+      - NGRINDER_AGENT_CONTROLLER_URL=http://controller:8080  # controller와의 통신 설정
+    networks:
+      - app-network
+
+#  jenkins:
+#    image: jenkins/jenkins:lts
+#    container_name: jenkins
+#    ports:
+#      - "8080:8080"   # Jenkins 웹 인터페이스 포트
+#      - "50000:50000" # Jenkins 에이전트 통신 포트
+#    networks:
+#      - app-network
+#    volumes:
+#      - jenkins_home:/var/jenkins_home
+#      - /var/run/docker.sock:/var/run/docker.sock # Docker in Docker
+#    environment:
+#      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false # 초기 설정 생략 (선택 사항)
 
 networks:
   app-network:

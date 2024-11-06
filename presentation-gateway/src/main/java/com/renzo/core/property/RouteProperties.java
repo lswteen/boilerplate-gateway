@@ -26,7 +26,7 @@ public class RouteProperties {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public class RouteDefinition{
+    public static class RouteDefinition{
         List<FilterDefinition> filters;
         List<PredicateDefinition> predicates;
     }

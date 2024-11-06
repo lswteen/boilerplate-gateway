@@ -24,7 +24,7 @@ public class ClientProperties{
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public class AuthorizationProperties {
+    public static class AuthorizationProperties {
         List<String> clientIp;
     }
 }
