@@ -1,0 +1,21 @@
+2024-11-01 13:19:12 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
+2024-11-01 13:19:12 [main] INFO  com.renzo.GatewayApplication - Starting GatewayApplication using Java 17.0.13 with PID 1145 (/Users/milk/workspace/boilerplate-gateway/presentation-gateway/build/classes/java/main started by milk in /Users/milk/workspace/boilerplate-gateway/presentation-gateway)
+2024-11-01 13:19:12 [main] INFO  com.renzo.GatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2024-11-01 13:19:12 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=03c6f36d-6f5b-3e08-9d56-e92d65c80c33
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [After]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Before]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Between]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Cookie]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Header]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Host]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Method]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Path]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Query]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [ReadBody]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [RemoteAddr]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [XForwardedRemoteAddr]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Weight]
+2024-11-01 13:19:12 [main] INFO  o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [CloudFoundryRouteService]
+2024-11-01 13:19:12 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+2024-11-01 13:19:12 [main] INFO  o.s.b.w.e.netty.NettyWebServer - Netty started on port 18080
+2024-11-01 13:19:12 [main] INFO  com.renzo.GatewayApplication - Started GatewayApplication in 0.942 seconds (process running for 1.067)
