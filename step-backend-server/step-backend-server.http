@@ -1,0 +1,47 @@
+### 모든 계정 조회
+GET http://localhost:18082/account
+Content-Type: application/json
+
+### 특정 계정 조회
+GET http://localhost:18082/account/1
+Content-Type: application/json
+
+### 계정 등록
+POST http://localhost:18082/account
+Content-Type: application/x-www-form-urlencoded
+
+id=1&name=John Doe
+
+### 다른 계정 등록
+POST http://localhost:18082/account
+Content-Type: application/x-www-form-urlencoded
+
+id=2&name=John Doe2
+
+### 다른 계정 등록
+POST http://localhost:18082/account
+Content-Type: application/x-www-form-urlencoded
+
+id=3&name=sunu
+
+### 계정 등록
+POST http://localhost:18082/account/json
+Content-Type: application/json
+
+{
+  "id" : 4
+  ,"name": "sunu444"
+}
+
+
+### 특정 계정 조회 (존재하는 ID로 조회)
+GET http://localhost:18082/account/1
+Content-Type: application/json
+
+### 계정 삭제
+DELETE http://localhost:18082/account/2
+Content-Type: application/json
+
+### 특정 계정 조회 (삭제된 ID로 조회)
+GET http://localhost:18082/account/2
+Content-Type: application/json
